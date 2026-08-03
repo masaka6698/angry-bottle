@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#fff7ed" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="情緒儲存瓶" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <title>情緒儲存瓶</title>
+  <style>
+    :root{
+      --bg:#fff7ed;--card:#fff;--text:#3f3f46;--muted:#71717a;
+      --anger:#fb7185;--sad:#60a5fa;--line:#e4e4e7;
+      --shadow:0 12px 30px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html{background:#fff7ed}
+    body{
+      margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;
+      background:linear-gradient(180deg,#fff7ed,#fefce8);color:var(--text);min-height:100vh;
+      padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);
+    }
+    header{padding:22px 18px 10px;text-align:center}
+    h1{margin:0;font-size:28px}.subtitle{margin:8px 0 0;color:var(--muted);font-size:14px}
+    main{max-width:760px;margin:auto;padding:14px 16px 40px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .card{background:var(--card);border-radius:24px;padding:18px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.8)}
+    .card h2{margin:0 0 12px;font-size:21px}
+    .bottle-wrap{display:flex;justify-content:center;align-items:flex-end;height:260px;margin:8px 0 12px}
+    .bottle{width:128px;height:220px;border:7px solid #52525b;border-top-width:14px;border-radius:30px 30px 38px 38px;position:relative;overflow:hidden;background:rgba(255,255,255,.65);box-shadow:inset 0 0 0 4px rgba(255,255,255,.45)}
+    .bottle:before{content:"";position:absolute;width:64px;height:28px;left:25px;top:-28px;border:7px solid #52525b;border-bottom:0;border-radius:10px 10px 0 0;background:#fff}
+    .liquid{position:absolute;bottom:0;left:0;width:100%;height:100%;transition:height .35s ease}
+    .liquid:before{content:"";position:absolute;top:-7px;left:-10%;width:120%;height:18px;border-radius:50%;background:rgba(255,255,255,.35)}
+    .anger .liquid{background:linear-gradient(#fda4af,#fb7185)}.sad .liquid{background:linear-gradient(#93c5fd,#60a5fa)}
+    .score{text-align:center;font-size:34px;font-weight:800;margin:4px 0}
+    .label{text-align:center;color:var(--muted);font-size:13px;margin-bottom:12px}
+    button{width:100%;border:0;border-radius:15px;padding:14px 12px;font-size:17px;font-weight:700;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+    .anger button{background:#ffe4e6;color:#be123c}.sad button{background:#dbeafe;color:#1d4ed8}
+    button:active{transform:scale(.98)}
+    .toolbar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    .secondary{background:#fff;color:#52525b;border:1px solid var(--line)}.danger{background:#18181b;color:#fff}
+    .history{margin-top:16px}.history h2{margin:0 0 12px}
+    .filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    select,input{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:15px;background:#fff}
+    .log-list{display:flex;flex-direction:column;gap:10px}.log{border:1px solid var(--line);border-radius:15px;padding:12px 14px;background:#fafafa}
+    .log-top{display:flex;justify-content:space-between;gap:8px;font-weight:700}.log small{display:block;margin-top:5px;color:var(--muted)}
+    .empty{text-align:center;color:var(--muted);padding:24px 0}
+    .modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.55);padding:20px;z-index:99}
+    .modal.show{display:grid}.modal-card{width:min(420px,100%);background:#fff;border-radius:24px;padding:24px;text-align:center;box-shadow:var(--shadow);animation:pop .35s ease}
+    .boom{font-size:72px;animation:shake .5s ease}.punishment{font-size:24px;font-weight:900;color:#b91c1c;margin:14px 0}.modal button{background:#18181b;color:#fff;margin-top:8px}
+    .note{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6}
+    @keyframes pop{from{transform:scale(.75);opacity:0}to{transform:scale(1);opacity:1}}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-12px)}40%{transform:translateX(12px)}60%{transform:translateX(-8px)}80%{transform:translateX(8px)}}
+    @media (max-width:560px){
+      .grid{grid-template-columns:1fr 1fr;gap:10px}.card{padding:14px;border-radius:20px}.card h2{font-size:18px}
+      .bottle-wrap{height:215px}.bottle{width:100px;height:180px}.bottle:before{width:54px;left:16px}
+      .score{font-size:29px}button{font-size:15px;padding:13px 8px}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🫙 情緒儲存瓶</h1>
+  <p class="subtitle">每次生氣或難過扣 5 分，歸零時瓶子會爆炸！</p>
+</header>
+<main>
+  <section class="grid">
+    <article class="card anger">
+      <h2>😠 生氣儲存瓶</h2>
+      <div class="bottle-wrap"><div class="bottle"><div class="liquid" id="angerLiquid"></div></div></div>
+      <div class="score"><span id="angerScore">100</span> 分</div>
+      <div class="label">每次點擊扣 5 分</div>
+      <button onclick="decrease('anger')">我生氣了 −5</button>
+    </article>
+    <article class="card sad">
+      <h2>😢 眼淚儲存瓶</h2>
+      <div class="bottle-wrap"><div class="bottle"><div class="liquid" id="sadLiquid"></div></div></div>
+      <div class="score"><span id="sadScore">100</span> 分</div>
+      <div class="label">每次點擊扣 5 分</div>
+      <button onclick="decrease('sad')">我難過了 −5</button>
+    </article>
+  </section>
+  <div class="toolbar">
+    <button class="secondary" onclick="resetScores()">重新裝滿瓶子</button>
+    <button class="danger" onclick="clearAll()">清除全部紀錄</button>
+  </div>
+  <section class="card history">
+    <h2>📖 情緒紀錄</h2>
+    <div class="filters">
+      <select id="typeFilter" onchange="renderLogs()">
+        <option value="all">全部類型</option><option value="anger">只看生氣</option>
+        <option value="sad">只看難過</option><option value="punishment">只看爆炸懲罰</option>
+      </select>
+      <input id="dateFilter" type="date" onchange="renderLogs()" />
+    </div>
+    <div id="logList" class="log-list"></div>
+    <p class="note">紀錄會保存在目前裝置的瀏覽器中。刪除網站資料或更換手機後，紀錄可能消失。</p>
+  </section>
+</main>
+<div class="modal" id="boomModal">
+  <div class="modal-card">
+    <div class="boom">💥</div><h2 id="boomTitle">瓶子爆炸了！</h2>
+    <div>隨機懲罰：</div><div class="punishment" id="punishmentText"></div>
+    <button onclick="closeModal()">知道了，重新開始</button>
+  </div>
+</div>
+<script>
+const STORAGE_KEY='emotionBottleGame_v2';
+const punishments=['禁吃零食五天','禁玩電腦二天','禁看電視一天'];
+let state=loadState();
+function loadState(){try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY));if(s&&typeof s.anger==='number'&&typeof s.sad==='number'&&Array.isArray(s.logs))return s}catch(e){}return{anger:100,sad:100,logs:[]}}
+function saveState(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}
+function nowInfo(){const d=new Date(),p=n=>String(n).padStart(2,'0');return{iso:`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`,text:`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${p(d.getHours())}:${p(d.getMinutes())}`}}
+function addLog(type,message,score){const t=nowInfo();state.logs.unshift({id:Date.now()+Math.random(),type,message,score,date:t.iso,timeText:t.text})}
+function decrease(type){if(state[type]<=0)return;state[type]=Math.max(0,state[type]-5);const name=type==='anger'?'生氣':'難過';addLog(type,`${name}一次，扣 5 分`,state[type]);if(state[type]===0){const punishment=punishments[Math.floor(Math.random()*punishments.length)];addLog('punishment',`${name}瓶爆炸：${punishment}`,0);saveState();updateUI();showBoom(type,punishment);return}saveState();updateUI()}
+function showBoom(type,punishment){document.getElementById('boomTitle').textContent=type==='anger'?'生氣儲存瓶爆炸了！':'眼淚儲存瓶爆炸了！';document.getElementById('punishmentText').textContent=punishment;document.getElementById('boomModal').classList.add('show')}
+function closeModal(){document.getElementById('boomModal').classList.remove('show');state.anger=100;state.sad=100;addLog('reset','瓶子爆炸後重新裝滿',100);saveState();updateUI()}
+function resetScores(){if(!confirm('確定要把兩個瓶子都恢復成 100 分嗎？'))return;state.anger=100;state.sad=100;addLog('reset','手動重新裝滿兩個瓶子',100);saveState();updateUI()}
+function clearAll(){if(!confirm('確定要清除全部分數與歷史紀錄嗎？這個動作無法復原。'))return;state={anger:100,sad:100,logs:[]};saveState();updateUI()}
+function updateUI(){angerScore.textContent=state.anger;sadScore.textContent=state.sad;angerLiquid.style.height=state.anger+'%';sadLiquid.style.height=state.sad+'%';renderLogs()}
+function renderLogs(){const list=document.getElementById('logList'),tf=typeFilter.value,df=dateFilter.value;const logs=state.logs.filter(l=>(tf==='all'||l.type===tf)&&(!df||l.date===df));if(!logs.length){list.innerHTML='<div class="empty">目前沒有符合條件的紀錄</div>';return}const names={anger:'😠 生氣',sad:'😢 難過',punishment:'💥 爆炸懲罰',reset:'🔄 重設'};list.innerHTML=logs.map(l=>`<div class="log"><div class="log-top"><span>${names[l.type]||'紀錄'}</span><span>${typeof l.score==='number'?l.score+' 分':''}</span></div><small>${escapeHtml(l.message)}｜${l.timeText}</small></div>`).join('')}
+function escapeHtml(t){return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}))}
+updateUI();
+</script>
+</body>
+</html>
